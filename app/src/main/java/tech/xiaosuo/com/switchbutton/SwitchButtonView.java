@@ -12,18 +12,30 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+
 public class SwitchButtonView extends View {
     private static final String TAG = "SwitchButtonView";
     private static final int MAX_WIDTH = 100;
     private static final int MAX_HEIGHT = MAX_WIDTH/2;
     private static final int MIN_WIDTH = 40;
     private static final int MIN_HEIGHT = MIN_WIDTH/2;
-    boolean isOn = false;
-    int buttonWidth;
-    int buttonHeight;
-    float firstDownX;
-    float firstDownY;
-    float moveDistance = 0;
+    private boolean mChecked = false;
+
+    private int buttonWidth;
+    private int buttonHeight;
+    private float firstDownX;
+    private float firstDownY;
+    private float moveDistance = 0;
+
+
+    public void setChecked(boolean mChecked) {
+        this.mChecked = mChecked;
+        invalidate();
+    }
+
+    public boolean isChecked(){
+        return mChecked;
+    }
     public SwitchButtonView(Context context) {
         super(context);
     }
@@ -62,6 +74,7 @@ public class SwitchButtonView extends View {
         }*/
     }
 
+    //only draw not checked view
     private void drawOff(Canvas canvas){
         if(canvas == null){
             return;
@@ -70,8 +83,8 @@ public class SwitchButtonView extends View {
         int height = getHeight();
         Log.d(TAG," the switchbutton width: " + width + " height: " + height);
 
-            width = buttonWidth;
-            height = buttonHeight;
+        width = buttonWidth;
+        height = buttonHeight;
         Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         //draw white bg
         bgPaint.setStyle(Paint.Style.FILL);
@@ -99,6 +112,7 @@ public class SwitchButtonView extends View {
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);
     }
 
+    //only draw checked view
     private void drawOn(Canvas canvas){
         int width = getWidth();
         int height = getHeight();
@@ -134,13 +148,17 @@ public class SwitchButtonView extends View {
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);
     }
 
+    /**
+     * show the current status,and deal with the touch move envent.
+     * @param canvas
+     */
     private void drawSwitchButtonMove(Canvas canvas){
         int width = buttonWidth;
         int height = buttonHeight;
         Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         //draw white bg
         bgPaint.setStyle(Paint.Style.FILL);
-        if(isOn) {// has open
+        if(isChecked()) {// has open
             bgPaint.setColor(Color.GREEN);
         }else {
             bgPaint.setColor(Color.GRAY);
@@ -153,24 +171,22 @@ public class SwitchButtonView extends View {
         RectF rectF = new RectF(left,top,right,bottom);
         float rx = height/2;
         float ry = rx;
-        canvas.drawRoundRect(rectF,rx,ry,bgPaint);
+        canvas.drawRoundRect(rectF,rx,ry,bgPaint);//draw the origin bg
         //draw shadow
 /*        bgPaint.setStyle(Paint.Style.STROKE);
         bgPaint.setStrokeWidth(2);
         bgPaint.setColor(Color.WHITE);
         canvas.drawRoundRect(rectF,rx,ry,bgPaint);*/
-
+        //draw cicle
         Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         circlePaint.setStyle(Paint.Style.FILL);
         circlePaint.setColor(Color.WHITE);
         float cx = 0;
-        if(isOn) {// has open
+        if(isChecked()) {// has open
             cx = right - left - rx;  // the circle center x when open
         }else {
             cx = rx;  // the circle center x when close
         }
-
-
 
         float cy = ry;
         float circleRadius = rx - 2;
@@ -235,14 +251,14 @@ public class SwitchButtonView extends View {
        }
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);*/
     }
-
+//only show button
     private void drawSwitchButtonView(Canvas canvas){
         int width = buttonWidth;
         int height = buttonHeight;
         Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         //draw white bg
         bgPaint.setStyle(Paint.Style.FILL);
-        if(isOn) {// has open
+        if(isChecked()) {// has open
             bgPaint.setColor(Color.GREEN);
         }else {
             bgPaint.setColor(Color.GRAY);
@@ -266,7 +282,7 @@ public class SwitchButtonView extends View {
         circlePaint.setStyle(Paint.Style.FILL);
         circlePaint.setColor(Color.WHITE);
         float cx = 0;
-        if(isOn) {// has open
+        if(isChecked()) {// has open
            cx = right - left - rx;
         }else {
             cx = rx;
@@ -295,13 +311,24 @@ public class SwitchButtonView extends View {
                     invalidate();
                     break;
             case MotionEvent.ACTION_UP:
-                if(isOn){
-                    isOn =false;
+                boolean status = isChecked();
+                if((moveDistance == 0) || (Math.abs(moveDistance) >  buttonWidth/2)){
+                    setChecked(!status);
                 }else{
-                    isOn = true;
+                    setChecked(status);
                 }
-                moveDistance = 0;
-                invalidate();
+
+/*                if(isChecked()){
+                    if(moveDistance < 0 && (Math.abs(moveDistance) >  buttonWidth/2)){
+                        setChecked(false);
+                    }
+                }else{
+                    if(moveDistance > 0 && (Math.abs(moveDistance) >  buttonWidth/2)){
+                        setChecked(true);
+                    }
+                }*/
+                moveDistance = 0;//if moveDistance is eaull 0, the user has stopped the move.
+
                 break;
                 default:
                     break;
