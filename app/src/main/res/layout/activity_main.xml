@@ -8,6 +8,9 @@
 
     <tech.xiaosuo.com.switchbutton.SwitchButtonView
         android:id="@+id/swb_view"
+        app:offBackground="@color/colorGray"
+        app:onBackground="@color/colorGreen"
+        app:circleColor="@color/colorWhite"
         android:layout_width="100dp"
         android:layout_height="50dp" />
 

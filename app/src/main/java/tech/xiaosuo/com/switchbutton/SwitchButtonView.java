@@ -1,6 +1,7 @@
 package tech.xiaosuo.com.switchbutton;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -32,6 +33,10 @@ public class SwitchButtonView extends View {
     private static final int MOVE_NONE = 0;
     private int moveDirection = MOVE_NONE;
     SwitchButtonClickListener mListener;
+
+    int mOffBackground;
+    int mOnBackground;
+    int mCircleColor;
     public void setChecked(boolean checked) {
         if(mChecked != checked){
             mChecked = checked;
@@ -48,10 +53,17 @@ public class SwitchButtonView extends View {
 
     public SwitchButtonView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        Log.d(TAG, " SwitchButtonView 2,: ");
+        TypedArray typedArray = context.obtainStyledAttributes(attrs,R.styleable.SwitchButtonStyleable);
+        mOffBackground = typedArray.getColor(R.styleable.SwitchButtonStyleable_offBackground,Color.GRAY);
+        mOnBackground = typedArray.getColor(R.styleable.SwitchButtonStyleable_onBackground,Color.GREEN);
+        mCircleColor = typedArray.getColor(R.styleable.SwitchButtonStyleable_circleColor,Color.WHITE);
+        typedArray.recycle();
     }
 
     public SwitchButtonView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        Log.d(TAG, " SwitchButtonView 3,: ");
     }
     //make sure the width is height*2
     @Override
@@ -64,7 +76,6 @@ public class SwitchButtonView extends View {
              buttonWidth = MIN_WIDTH;
          }
         buttonHeight = buttonWidth/2;
-
         super.onLayout(changed, left, top, right, bottom);
     }
 
@@ -72,16 +83,10 @@ public class SwitchButtonView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawSwitchButtonMove(canvas);
-      //  drawSwitchButtonView(canvas);
-/*        if(isOn == false){
-            drawOff(canvas);
-        }else {
-            drawOn(canvas);
-        }*/
     }
 
     //only draw not checked view
-    private void drawOff(Canvas canvas){
+/*    private void drawOff(Canvas canvas){
         if(canvas == null){
             return;
         }
@@ -116,7 +121,7 @@ public class SwitchButtonView extends View {
         float cy = ry;
         float circleRadius = rx-2;
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);
-    }
+    }*/
 
     /*//only draw checked view
     private void drawOn(Canvas canvas){
@@ -165,9 +170,9 @@ public class SwitchButtonView extends View {
         //draw white bg
         bgPaint.setStyle(Paint.Style.FILL);
         if(isChecked()) {// has open
-            bgPaint.setColor(Color.GREEN);
+            bgPaint.setColor(mOnBackground);
         }else {
-            bgPaint.setColor(Color.GRAY);
+            bgPaint.setColor(mOffBackground);
         }
 
         int left = 0;
@@ -186,7 +191,7 @@ public class SwitchButtonView extends View {
         //draw cicle
         Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         circlePaint.setStyle(Paint.Style.FILL);
-        circlePaint.setColor(Color.WHITE);
+        circlePaint.setColor(mCircleColor);
         float cx = 0;
         if(isChecked()) {// has open
             cx = right - left - rx;  // the circle center x when open
@@ -202,7 +207,7 @@ public class SwitchButtonView extends View {
         Paint movePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         movePaint.setStyle(Paint.Style.FILL);
         if((moveDirection == MOVE_TO_RIGHT) && (moveDistance>0)){//draw the move bg  画滑动背景图  from left to right when is off //moveDistance > 0 &&
-            movePaint.setColor(Color.GREEN);
+            movePaint.setColor(mOnBackground);
             float moveRight = left + moveDistance + 2*circleRadius;//why +2*circleRadius,because bg need be under the circle .
             if(moveRight > right){//防止超过图标宽度
                 moveRight = right;
@@ -223,7 +228,7 @@ public class SwitchButtonView extends View {
             //draw circle end
 
         }else if((moveDirection == MOVE_TO_LEFT) && (moveDistance < 0)){ // from right to left when is on // moveDistance < 0
-            movePaint.setColor(Color.GRAY);
+            movePaint.setColor(mOffBackground);
             float moveLeft = right + moveDistance - 2*circleRadius;//why +2*circleRadius,because bg need be under the circle .
             if(moveLeft < left){
                 moveLeft = left;
