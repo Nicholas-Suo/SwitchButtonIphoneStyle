@@ -32,7 +32,7 @@ public class SwitchButtonView extends View {
     private static final int MOVE_TO_LEFT = -1;
     private static final int MOVE_NONE = 0;
     private int moveDirection = MOVE_NONE;
-    SwitchButtonClickListener mListener;
+    SwitchButtonStatusChangedListener mListener;
 
     int mOffBackground;
     int mOnBackground;
@@ -40,6 +40,9 @@ public class SwitchButtonView extends View {
     public void setChecked(boolean checked) {
         if(mChecked != checked){
             mChecked = checked;
+            if(mListener != null){//add the callback function when the checke status changed
+                mListener.OnSwitchButtonCheckedStatusChanged();
+            }
         }
         invalidate();
     }
@@ -322,9 +325,6 @@ public class SwitchButtonView extends View {
                    )
                 {
                     setChecked(!status);
-                    if(mListener != null){//add the callback function when the checke status changed
-                        mListener.OnSwitchButtonClick();
-                    }
                 }else{
                     setChecked(status);
                 }
@@ -338,11 +338,11 @@ public class SwitchButtonView extends View {
         return true;
     }
 
-   void setOnSwitchButtonListener(SwitchButtonClickListener listener){
+   void setSwitchButtonStatusChangedListener(SwitchButtonStatusChangedListener listener){
        mListener = listener;
     }
 
-    public interface SwitchButtonClickListener{
-        void OnSwitchButtonClick();
+    public interface SwitchButtonStatusChangedListener{
+        void OnSwitchButtonCheckedStatusChanged();
     }
 }
