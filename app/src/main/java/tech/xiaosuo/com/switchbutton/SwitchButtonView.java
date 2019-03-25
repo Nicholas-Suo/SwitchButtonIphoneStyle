@@ -69,16 +69,38 @@ public class SwitchButtonView extends View {
         Log.d(TAG, " SwitchButtonView 3,: ");
     }
     //make sure the width is height*2
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        buttonWidth = MeasureSpec.getSize(widthMeasureSpec);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+
+         buttonHeight = MeasureSpec.getSize(heightMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        Log.d(TAG,"onMeasure width; " + buttonWidth + " ,widthMode: " + widthMode + " ,height: " + buttonHeight + " ,heightMode: " + heightMode);
+      //  buttonWidth = getWidth();
+      //  buttonHeight = getHeight();
+        if(buttonWidth > MAX_WIDTH){
+            buttonWidth = MAX_WIDTH;
+        }else if(buttonWidth < MIN_WIDTH){
+            buttonWidth = MIN_WIDTH;
+        }
+        buttonHeight = buttonWidth/2;
+        setMeasuredDimension(buttonWidth,buttonHeight);
+        //super.onMeasure(widthMeasureSpec,heightMeasureSpec);
+    }
+
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        buttonWidth = getWidth();
+/*        buttonWidth = getWidth();
         buttonHeight = getHeight();
-         if(buttonWidth > MAX_WIDTH){
-             buttonWidth = MAX_WIDTH;
-         }else if(buttonWidth < MIN_WIDTH){
-             buttonWidth = MIN_WIDTH;
-         }
-        buttonHeight = buttonWidth/2;
+        if(buttonWidth > MAX_WIDTH){
+            buttonWidth = MAX_WIDTH;
+        }else if(buttonWidth < MIN_WIDTH){
+            buttonWidth = MIN_WIDTH;
+        }
+        buttonHeight = buttonWidth/2;*/
+        Log.d(TAG," onLayout left; " + left + " ,top: " + top + " ,right: " + right + " ,bottom: " + bottom);
         super.onLayout(changed, left, top, right, bottom);
     }
 
@@ -178,10 +200,10 @@ public class SwitchButtonView extends View {
             bgPaint.setColor(mOffBackground);
         }
 
-        int left = 0;
-        int top = 0;
-        int right = width - left;
-        int bottom = height - top;
+        int left = 0; //getLeft();//0
+        int top = 0;//getTop();//0
+        int right = width - left;//getRight() - left;//
+        int bottom = height - top;// getBottom() - top;//
         RectF rectF = new RectF(left,top,right,bottom);
         float rx = height/2;
         float ry = rx;
