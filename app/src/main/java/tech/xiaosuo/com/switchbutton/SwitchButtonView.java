@@ -27,9 +27,15 @@ public class SwitchButtonView extends View {
     private float firstDownY;
     private float moveDistance = 0;
 
-
-    public void setChecked(boolean mChecked) {
-        this.mChecked = mChecked;
+    private static final int MOVE_TO_RIGHT = 1;
+    private static final int MOVE_TO_LEFT = -1;
+    private static final int MOVE_NONE = 0;
+    private int moveDirection = MOVE_NONE;
+    SwitchButtonClickListener mListener;
+    public void setChecked(boolean checked) {
+        if(mChecked != checked){
+            mChecked = checked;
+        }
         invalidate();
     }
 
@@ -112,7 +118,7 @@ public class SwitchButtonView extends View {
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);
     }
 
-    //only draw checked view
+    /*//only draw checked view
     private void drawOn(Canvas canvas){
         int width = getWidth();
         int height = getHeight();
@@ -146,7 +152,7 @@ public class SwitchButtonView extends View {
         float cy = ry;
         float circleRadius = rx - 2;
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);
-    }
+    }*/
 
     /**
      * show the current status,and deal with the touch move envent.
@@ -191,24 +197,24 @@ public class SwitchButtonView extends View {
         float cy = ry;
         float circleRadius = rx - 2;
 
-/*
-        if( moveDistance >=  right){//避免超出图标的宽度
-            moveDistance = right;
-        }
-*/
+        Log.d(TAG, " moveDistance is: " + moveDistance);
        //draw bg when move.
         Paint movePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         movePaint.setStyle(Paint.Style.FILL);
-        if(moveDistance > 0){//draw the move bg  画滑动背景图  from left to right when is off
+        if((moveDirection == MOVE_TO_RIGHT) && (moveDistance>0)){//draw the move bg  画滑动背景图  from left to right when is off //moveDistance > 0 &&
             movePaint.setColor(Color.GREEN);
             float moveRight = left + moveDistance + 2*circleRadius;//why +2*circleRadius,because bg need be under the circle .
             if(moveRight > right){//防止超过图标宽度
                 moveRight = right;
             }
+
+
             RectF rectFMove = new RectF(left,top, moveRight ,bottom);
             canvas.drawRoundRect(rectFMove,rx,ry,movePaint);
             //draw circle begin
+            float originCx = cx;
             cx = cx + moveDistance;
+
             float rightCenter = right - left - rx;
             if(cx > rightCenter){
                 cx = rightCenter;
@@ -216,7 +222,7 @@ public class SwitchButtonView extends View {
             canvas.drawCircle(cx,cy,circleRadius,circlePaint);
             //draw circle end
 
-        }else if(moveDistance < 0){ // from right to left when is on
+        }else if((moveDirection == MOVE_TO_LEFT) && (moveDistance < 0)){ // from right to left when is on // moveDistance < 0
             movePaint.setColor(Color.GRAY);
             float moveLeft = right + moveDistance - 2*circleRadius;//why +2*circleRadius,because bg need be under the circle .
             if(moveLeft < left){
@@ -235,24 +241,9 @@ public class SwitchButtonView extends View {
             canvas.drawCircle(cx,cy,circleRadius,circlePaint);
         }
 
-/*        //draw circle when move
-       if(moveDistance > 0){
-            cx = cx + moveDistance;
-            float rightCenter = right - left - rx;
-            if(cx > rightCenter){
-                cx = rightCenter;
-            }
-
-       }else if(moveDistance < 0){
-           cx = right + moveDistance - circleRadius;
-           if(cx < rx){
-               cx = rx;
-           }
-       }
-        canvas.drawCircle(cx,cy,circleRadius,circlePaint);*/
     }
 //only show button
-    private void drawSwitchButtonView(Canvas canvas){
+    /*private void drawSwitchButtonView(Canvas canvas){
         int width = buttonWidth;
         int height = buttonHeight;
         Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -291,7 +282,7 @@ public class SwitchButtonView extends View {
         float cy = ry;
         float circleRadius = rx - 2;
         canvas.drawCircle(cx,cy,circleRadius,circlePaint);
-    }
+    }*/
 
 
     @Override
@@ -308,31 +299,45 @@ public class SwitchButtonView extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
                     moveDistance = x - firstDownX;
+                    if(moveDirection == MOVE_NONE){
+                      if(moveDistance > 0){
+                          moveDirection = MOVE_TO_RIGHT;
+                      }else if(moveDistance < 0){
+                          moveDirection = MOVE_TO_LEFT;
+                      }
+                    }
                     invalidate();
                     break;
             case MotionEvent.ACTION_UP:
                 boolean status = isChecked();
-                if((moveDistance == 0) || (Math.abs(moveDistance) >  buttonWidth/2)){
+                //when the click or move instance > (buttonWidth/2) - (buttonHeight/2) ,the swithc button need change status.
+                if( ((moveDistance == 0) && (moveDirection == MOVE_NONE))
+                        || ((moveDirection == MOVE_TO_RIGHT) && (moveDistance > 0)  && (Math.abs(moveDistance) >  (buttonWidth/2) - (buttonHeight/2) ))
+                        ||  ((moveDirection == MOVE_TO_LEFT) && (moveDistance < 0)  && (Math.abs(moveDistance) >  (buttonWidth/2) - (buttonHeight/2) ))
+                   )
+                {
                     setChecked(!status);
+                    if(mListener != null){//add the callback function when the checke status changed
+                        mListener.OnSwitchButtonClick();
+                    }
                 }else{
                     setChecked(status);
                 }
-
-/*                if(isChecked()){
-                    if(moveDistance < 0 && (Math.abs(moveDistance) >  buttonWidth/2)){
-                        setChecked(false);
-                    }
-                }else{
-                    if(moveDistance > 0 && (Math.abs(moveDistance) >  buttonWidth/2)){
-                        setChecked(true);
-                    }
-                }*/
+              //  invalidate();
                 moveDistance = 0;//if moveDistance is eaull 0, the user has stopped the move.
-
+                moveDirection = MOVE_NONE;
                 break;
                 default:
                     break;
         }
         return true;
+    }
+
+   void setOnSwitchButtonListener(SwitchButtonClickListener listener){
+       mListener = listener;
+    }
+
+    public interface SwitchButtonClickListener{
+        void OnSwitchButtonClick();
     }
 }
